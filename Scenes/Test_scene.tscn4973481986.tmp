@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://dsfv3v1r3twu5"]
+
+[ext_resource type="Script" uid="uid://0fuoo6waljbx" path="res://Scripts/MeshBuilder.gd" id="1_02jwc"]
+[ext_resource type="PackedScene" uid="uid://cbw0rfdb6cei3" path="res://Scenes/camera_man.tscn" id="2_753rh"]
+
+[node name="TestScene" type="Node3D" node_paths=PackedStringArray("mesh_instance")]
+script = ExtResource("1_02jwc")
+mesh_instance = NodePath("MeshInstance3D")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+
+[node name="CameraMan" parent="." instance=ExtResource("2_753rh")]
+transform = Transform3D(1, 0, 0, 0, 0.087155804, 0.9961947, 0, -0.9961947, 0.087155804, 0, 1, 0)
