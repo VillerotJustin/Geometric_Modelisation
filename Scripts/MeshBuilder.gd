@@ -23,6 +23,8 @@ func _ready() -> void:
 	
 	draw_cone(Vector3(5, 3, -5), 4, Vector3(6, 5, -5), 16)
 	
+	draw_sphere(Vector3(10, 10 , 10), 4, 16, 16)
+	
 # -------------------------------------------------------------------
 # Simple Quad (1 rectangle made of 2 triangles)
 # -------------------------------------------------------------------
@@ -33,7 +35,8 @@ func draw_simple_quad(origin: Vector3, l_o: Vector3, h_o: Vector3, quad_color: C
 	
 	var mat = StandardMaterial3D.new()
 	mat.albedo_color = quad_color
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	#mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	st.set_material(mat)
 	
 	# Directions and corners
@@ -53,15 +56,6 @@ func draw_simple_quad(origin: Vector3, l_o: Vector3, h_o: Vector3, quad_color: C
 		Vector2(0, 0), Vector2(1, 0), Vector2(0, 1),
 		Vector2(0, 1), Vector2(1, 0), Vector2(1, 1)
 	]
-	
-	# Doubling side of triangles
-	var reverse = verts.duplicate()
-	reverse.reverse()
-	verts.append_array(reverse)
-	
-	var RUVs = uvs.duplicate()
-	RUVs.reverse()
-	uvs.append_array(RUVs)
 	
 	for i in range(verts.size()):
 		st.set_color(quad_color)
@@ -87,9 +81,9 @@ func draw_fragmented_rectangle(origin:Vector3, l_o:Vector3, h_o:Vector3, n_col: 
 	var rect_UVs = PackedVector2Array()
 	var rect_mat = StandardMaterial3D.new()
 	
-	rect_mat.albedo_color = rect_color
-	
-	rect_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	rect_mat.albedo_color = rect_color	
+	rect_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	#rect_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	
 	var st = SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -134,16 +128,6 @@ func draw_fragmented_rectangle(origin:Vector3, l_o:Vector3, h_o:Vector3, n_col: 
 				Vector2(u0, v0), Vector2(u1, v0), Vector2(u0, v1),
 				Vector2(u0, v1), Vector2(u1, v0), Vector2(u1, v1)
 			])
-			
-	
-	# Doubling side of triangles
-	var reverse = rect_vertices.duplicate()
-	reverse.reverse()
-	rect_vertices.append_array(reverse)
-	
-	var RUVs = rect_UVs.duplicate()
-	RUVs.reverse()
-	rect_UVs.append_array(RUVs)
 	
 	var color_it: bool = false
 	for v in range(rect_vertices.size()):
@@ -193,7 +177,8 @@ func draw_circle(origin: Vector3, radius: float, normal: Vector3, sides: int = 8
 	
 	var mat = StandardMaterial3D.new()
 	mat.albedo_color = color
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	#mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	st.set_material(mat)
 	
 	var verts = PackedVector3Array()
@@ -232,16 +217,6 @@ func draw_circle(origin: Vector3, radius: float, normal: Vector3, sides: int = 8
 		UVs.push_back(Vector2(1,1))
 		UVs.push_back(Vector2(1,1))
 		
-	# Doubling side of triangles
-	var reverse = verts.duplicate()
-	reverse.reverse()
-	verts.append_array(reverse)
-	
-	var RUVs = UVs.duplicate()
-	RUVs.reverse()
-	UVs.append_array(RUVs)
-	
-	
 	# Export
 	for i in range(verts.size()):
 		st.set_color(color)
@@ -255,7 +230,6 @@ func draw_circle(origin: Vector3, radius: float, normal: Vector3, sides: int = 8
 	circle_instance.position = origin
 	circle_instance.mesh = circle_mesh
 	add_child(circle_instance)
-	
 
 # -------------------------------------------------------------------
 # Draw a Cylinder
@@ -290,7 +264,8 @@ func draw_cylindre(origin: Vector3, radius_t: float, radius_b: float, end: Vecto
 	
 	var mat = StandardMaterial3D.new()
 	mat.albedo_color = color
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	#mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	st.set_material(mat)
 	
 	var verts = PackedVector3Array()
@@ -361,16 +336,6 @@ func draw_cylindre(origin: Vector3, radius_t: float, radius_b: float, end: Vecto
 		# Repeat UVs for each new triangle
 		for _i in range(6):
 			UVs.push_back(Vector2(1,1))
-		
-	
-	# Doubling side of triangles
-	var reverse = verts.duplicate()
-	reverse.reverse()
-	verts.append_array(reverse)
-	
-	var RUVs = UVs.duplicate()
-	RUVs.reverse()
-	UVs.append_array(RUVs)
 	
 	# Export
 	for i in range(verts.size()):
@@ -385,8 +350,6 @@ func draw_cylindre(origin: Vector3, radius_t: float, radius_b: float, end: Vecto
 	circle_instance.position = origin
 	circle_instance.mesh = circle_mesh
 	add_child(circle_instance)
-	
-	
 
 func draw_hourglass(origin: Vector3, radius_t: float, radius_b: float, end: Vector3, sides: int = 8, color: Color = Color(1,0,1)):
 	print("Draw Cylindre")
@@ -403,7 +366,8 @@ func draw_hourglass(origin: Vector3, radius_t: float, radius_b: float, end: Vect
 	
 	var mat = StandardMaterial3D.new()
 	mat.albedo_color = color
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	#mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	st.set_material(mat)
 	
 	var verts = PackedVector3Array()
@@ -476,16 +440,6 @@ func draw_hourglass(origin: Vector3, radius_t: float, radius_b: float, end: Vect
 		# Repeat UVs for each new triangle
 		for _i in range(6):
 			UVs.push_back(Vector2(1,1))
-		
-	
-	# Doubling side of triangles
-	var reverse = verts.duplicate()
-	reverse.reverse()
-	verts.append_array(reverse)
-	
-	var RUVs = UVs.duplicate()
-	RUVs.reverse()
-	UVs.append_array(RUVs)
 	
 	# Export
 	for i in range(verts.size()):
@@ -501,7 +455,6 @@ func draw_hourglass(origin: Vector3, radius_t: float, radius_b: float, end: Vect
 	circle_instance.mesh = circle_mesh
 	add_child(circle_instance)
 
-
 func draw_cone(origin: Vector3, radius: float, end: Vector3, sides: int = 8, color: Color = Color(0,1,1)):
 	# Draw the two opposite circle
 	
@@ -515,7 +468,8 @@ func draw_cone(origin: Vector3, radius: float, end: Vector3, sides: int = 8, col
 	
 	var mat = StandardMaterial3D.new()
 	mat.albedo_color = color
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	#mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	st.set_material(mat)
 	
 	var verts = PackedVector3Array()
@@ -563,17 +517,6 @@ func draw_cone(origin: Vector3, radius: float, end: Vector3, sides: int = 8, col
 		UVs.push_back(Vector2(0.5,0.5))
 		UVs.push_back(Vector2(0.5,0.5))
 	
-	
-	
-	# Doubling side of triangles
-	var reverse = verts.duplicate()
-	reverse.reverse()
-	verts.append_array(reverse)
-	
-	var RUVs = UVs.duplicate()
-	RUVs.reverse()
-	UVs.append_array(RUVs)
-	
 	# Export
 	for i in range(verts.size()):
 		st.set_color(color)
@@ -587,7 +530,75 @@ func draw_cone(origin: Vector3, radius: float, end: Vector3, sides: int = 8, col
 	cone_instance.position = origin
 	cone_instance.mesh = cone_mesh
 	add_child(cone_instance)
+
+func draw_sphere(center: Vector3, radius: float, parallels: int, meridians: int, color: Color = Color(1,1,0.5)):
+	var sphere_mesh = ArrayMesh.new()
+	var st = SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	
+	var mat = StandardMaterial3D.new()
+	mat.albedo_color = color
+	#mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	st.set_material(mat)
 	
+	# Doing vertices
+	var verts = PackedVector3Array()
+	var UVs = PackedVector2Array()
+	var Normals = PackedVector3Array()
 	
+	for para in range(parallels):
+		var phi0 = PI * para / parallels
+		var phi1 = PI * (para + 1) / parallels
+		for merid in range(meridians):
+			var theta0 = TAU * merid / meridians
+			var theta1 = TAU * (merid + 1) / meridians
+			
+			var p00 = Vector3(radius * sin(phi0) * cos(theta0), radius * cos(phi0), radius * sin(phi0) * sin(theta0))
+			var p01 = Vector3(radius * sin(phi0) * cos(theta1), radius * cos(phi0), radius * sin(phi0) * sin(theta1))
+			var p10 = Vector3(radius * sin(phi1) * cos(theta0), radius * cos(phi1), radius * sin(phi1) * sin(theta0))
+			var p11 = Vector3(radius * sin(phi1) * cos(theta1), radius * cos(phi1), radius * sin(phi1) * sin(theta1))
+			
+			var uv00 = Vector2(merid / float(meridians), para / float(parallels))
+			var uv01 = Vector2((merid + 1) / float(meridians), para / float(parallels))
+			var uv10 = Vector2(merid / float(meridians), (para + 1) / float(parallels))
+			var uv11 = Vector2((merid + 1) / float(meridians), (para + 1) / float(parallels))
+			
+			verts.append_array([
+				p00, p10, p11,
+				p00, p11, p01
+			])
+			
+			UVs.append_array([
+				uv00, uv10, uv11,
+				uv00, uv11, uv01
+			])
+			
+			Normals.append_array([
+				p00.normalized(), p10.normalized(), p11.normalized(),
+				p00.normalized(), p11.normalized(), p01.normalized()
+			])
+		
 	
+	# Doubling side of triangles
+	#var reverse = verts.duplicate()
+	#reverse.reverse()
+	#verts.append_array(reverse)
+	#
+	#var RUVs = UVs.duplicate()
+	#RUVs.reverse()
+	#UVs.append_array(RUVs)
+	
+	for i in range(verts.size()):
+		st.set_color(color)
+		st.set_uv(UVs[i])
+		st.set_normal(Normals[i])
+		st.add_vertex(verts[i])
+	
+	st.commit(sphere_mesh)
+	
+	# Create MeshInstance3D
+	var sphere_instance = MeshInstance3D.new()
+	sphere_instance.position = center
+	sphere_instance.mesh = sphere_mesh
+	add_child(sphere_instance)

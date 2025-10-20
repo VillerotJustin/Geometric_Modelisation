@@ -33,13 +33,13 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_pressed("camera_right"):
 		move_dir.x += 1.0
 	if Input.is_action_pressed("camera_up"):
-		move_dir.y += 1.0
-	if Input.is_action_pressed("camera_down"):
-		move_dir.y -= 1.0
-	if Input.is_action_pressed("camera_high"):
 		move_dir.z -= 1.0
-	if Input.is_action_pressed("camera_low"):
+	if Input.is_action_pressed("camera_down"):
 		move_dir.z += 1.0
+	if Input.is_action_pressed("camera_high"):
+		move_dir.y -= 1.0
+	if Input.is_action_pressed("camera_low"):
+		move_dir.y += 1.0
 
 	if move_dir != Vector3.ZERO:
 		move_dir = move_dir.normalized() * speed * delta
