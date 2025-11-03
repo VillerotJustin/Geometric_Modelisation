@@ -1,7 +1,5 @@
 extends Node3D
 
-@export var mesh_instance:MeshInstance3D
-
 func _ready() -> void:
 	
 	# Example usage
@@ -9,7 +7,7 @@ func _ready() -> void:
 	
 	draw_fragmented_rectangle(Vector3(1, 3, 3), Vector3(3, 3, 0), Vector3(3, 5, 0), 5, 6)
 	
-	draw_fragmented_rectangle(Vector3(1, 3, 3), Vector3(1, 5, 3), Vector3(1, 3, 5), 3, 2, Color(), Color(1,1,1))
+	draw_fragmented_rectangle(Vector3(1, 3, 3), Vector3(1, 5, 3), Vector3(1, 3, 5), 3, 2, Color())
 	
 	draw_circle(Vector3(5, 0, 5), 3, Vector3(1, 0, 0), 8)
 	
@@ -25,127 +23,91 @@ func _ready() -> void:
 	
 	draw_sphere(Vector3(10, 10 , 10), 4, 16, 16)
 	
-# -------------------------------------------------------------------
+	get_tree().current_scene.add_child(Mesh_Importer.read_off("res://Meshes/bunny.off"))
+	
+# -----------------------------
 # Simple Quad (1 rectangle made of 2 triangles)
-# -------------------------------------------------------------------
+# -----------------------------
 func draw_simple_quad(origin: Vector3, l_o: Vector3, h_o: Vector3, quad_color: Color = Color(1, 0, 0)) -> void:
-	var quad_mesh = ArrayMesh.new()
-	var st = SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	
-	var mat = StandardMaterial3D.new()
-	mat.albedo_color = quad_color
-	#mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	st.set_material(mat)
-	
-	# Directions and corners
-	var dir_x = (l_o - origin)
-	var dir_z = (h_o - origin)
-	
-	var l_origin = Vector3.ZERO
-	
-	var p00 = l_origin
-	var p01 = l_origin + dir_x
-	var p10 = l_origin + dir_z
-	var p11 = l_origin + dir_x + dir_z
-	
-	# Add vertices (two triangles)
-	var verts = [p00, p01, p10, p10, p01, p11]
-	var uvs = [
-		Vector2(0, 0), Vector2(1, 0), Vector2(0, 1),
-		Vector2(0, 1), Vector2(1, 0), Vector2(1, 1)
-	]
-	
-	for i in range(verts.size()):
-		st.set_color(quad_color)
-		st.set_uv(uvs[i])
-		st.add_vertex(verts[i])
-	
-	st.commit(quad_mesh)
-	
-	# Create MeshInstance3D
-	var quad_instance = MeshInstance3D.new()
-	quad_instance.position = origin
-	quad_instance.mesh = quad_mesh
-	add_child(quad_instance)
+	var mesh:ArrayMesh = ArrayMesh.new()
+	# local axes
+	var dir_x:Vector3 = l_o - origin
+	var dir_z:Vector3 = h_o - origin
+	var local_origin:Vector3 = Vector3.ZERO
+	var p00:Vector3 = local_origin
+	var p01:Vector3 = local_origin + dir_x
+	var p10:Vector3 = local_origin + dir_z
+	var p11:Vector3 = local_origin + dir_x + dir_z
+	var verts: PackedVector3Array = PackedVector3Array([p00, p01, p10, p10, p01, p11])
+	var uvs: PackedVector2Array = PackedVector2Array([
+	Vector2(0, 0), Vector2(1, 0), Vector2(0, 1),
+	Vector2(0, 1), Vector2(1, 0), Vector2(1, 1)
+	])
+	Mesh_Helpers._commit_vertices_to_mesh(mesh, quad_color, verts, uvs)
+	get_tree().current_scene.add_child(Mesh_Helpers._make_mesh_instance(mesh, origin))
 
-func draw_fragmented_rectangle(origin:Vector3, l_o:Vector3, h_o:Vector3, n_col: int = 4, n_line:int = 4, rect_color: Color =  Color(0.1, 0.9, 0.1), rect_color2: Color =  Color(0.1, 0.1, 0.9) ):
-	print("Drawn frag rect")
-	
-	# Creating Mesh instance & other new thingy
-	var mesh_instance_rect = MeshInstance3D.new()
-	
-	var rect_Mesh = ArrayMesh.new()
-	var rect_vertices = PackedVector3Array()
-	var rect_UVs = PackedVector2Array()
-	var rect_mat = StandardMaterial3D.new()
-	
-	rect_mat.albedo_color = rect_color	
-	rect_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	#rect_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	
-	var st = SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	st.set_material(rect_mat)
-	
-	# Extract Local values
-	var local_ori:Vector3 = Vector3.ZERO
-	var local_l_o:Vector3 = l_o - origin
-	var local_h_o:Vector3 = h_o - origin
-	
-	var length = local_l_o.length()
-	var heigth = local_h_o.length()
-	
-	var dir_x = (l_o - origin).normalized()
-	var dir_z = (h_o - origin).normalized()
+# -----------------------------
+# Fragmented rectangle (grid)
+# -----------------------------
+func draw_fragmented_rectangle(origin: Vector3, l_o: Vector3, h_o: Vector3, n_col: int = 4, n_line: int = 4, rect_color: Color = Color(0.1, 0.9, 0.1)) -> void:
+	var mesh: ArrayMesh = ArrayMesh.new()
+	var verts: PackedVector3Array = PackedVector3Array()
+	var uvs: PackedVector2Array = PackedVector2Array()
 
-	
+
+	var local_origin:Vector3 = Vector3.ZERO
+	var local_l:Vector3 = l_o - origin
+	var local_h:Vector3 = h_o - origin
+	var length:float = local_l.length()
+	var height:float = local_h.length()
+	var dir_x:Vector3 = local_l.normalized()
+	var dir_z:Vector3 = local_h.normalized()
+
+
 	for col in range(n_col):
 		for line in range(n_line):
-			# Build vertice position for quad
-			var x0 = col * length / n_col
-			var x1 = (col + 1) * length / n_col
-			var z0 = line * heigth / n_line
-			var z1 = (line + 1) * heigth / n_line
-			
-			# Vertices in local space
-			var p00: Vector3 = local_ori + dir_x * x0 + dir_z * z0
-			var p01: Vector3 = local_ori + dir_x * x1 + dir_z * z0
-			var p10: Vector3 = local_ori + dir_x * x0 + dir_z * z1
-			var p11: Vector3 = local_ori + dir_x * x1 + dir_z * z1
-			
-			# Add vertices
-			rect_vertices.append_array([p00, p10, p01, p01, p10, p11])
-			
-			# --- Add UVs ---
-			var u0 = float(col) / n_col
-			var v0 = float(line) / n_line
-			var u1 = float(col + 1) / n_col
-			var v1 = float(line + 1) / n_line
+			var x0: float = col * length / n_col
+			var x1: float = (col + 1) * length / n_col
+			var z0: float = line * height / n_line
+			var z1: float = (line + 1) * height / n_line
 
-			rect_UVs.append_array([
-				Vector2(u0, v0), Vector2(u1, v0), Vector2(u0, v1),
-				Vector2(u0, v1), Vector2(u1, v0), Vector2(u1, v1)
+
+			var p00:Vector3 = local_origin + dir_x * x0 + dir_z * z0
+			var p01:Vector3 = local_origin + dir_x * x1 + dir_z * z0
+			var p10:Vector3 = local_origin + dir_x * x0 + dir_z * z1
+			var p11:Vector3 = local_origin + dir_x * x1 + dir_z * z1
+
+
+			verts.append_array([p00, p10, p01, p01, p10, p11])
+
+
+			var u0:float = float(col) / n_col
+			var v0:float = float(line) / n_line
+			var u1:float = float(col + 1) / n_col
+			var v1:float = float(line + 1) / n_line
+			uvs.append_array([
+			Vector2(u0, v0), Vector2(u1, v0), Vector2(u0, v1),
+			Vector2(u0, v1), Vector2(u1, v0), Vector2(u1, v1)
 			])
+	# Interleave colors per-vertex by alternating the two colors (keeps original behavior)
+	# SurfaceTool requires explicit add order, so we commit using helpers
+	# We create a temporary color array that matches vertex count
+	# But SurfaceTool only supports set_color per vertex, so we set color during commit
+	# Create a flat UV array already done above
+
+	# Commit manually to allow per-vertex colors
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_material(Mesh_Helpers._create_standard_material(rect_color))
+	for i in range(verts.size()):
+		st.set_color(rect_color)
+		if uvs.size() == verts.size():
+			st.set_uv(uvs[i])
+			st.add_vertex(verts[i])
 	
-	var color_it: bool = false
-	for v in range(rect_vertices.size()):
-		if color_it:
-			st.set_color(rect_color)
-		else:
-			st.set_color(rect_color2)
-		color_it = !color_it
-		st.set_uv(rect_UVs[v])
-		st.add_vertex(rect_vertices[v])
-	
-	st.commit(rect_Mesh)
-	
-	mesh_instance_rect.mesh = rect_Mesh
-	
-	mesh_instance_rect.position = origin
-	
-	add_child(mesh_instance_rect)
+	st.commit(mesh)
+
+	get_tree().current_scene.add_child(Mesh_Helpers._make_mesh_instance(mesh, origin))
 
 # -------------------------------------------------------------------
 # Draw a Circle

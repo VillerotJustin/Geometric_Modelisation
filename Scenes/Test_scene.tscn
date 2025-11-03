@@ -16,9 +16,8 @@ height = 0.2
 
 [sub_resource type="Environment" id="Environment_753rh"]
 
-[node name="TestScene" type="Node3D" node_paths=PackedStringArray("mesh_instance")]
+[node name="TestScene" type="Node3D"]
 script = ExtResource("1_02jwc")
-mesh_instance = NodePath("MeshInstance3D")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 
@@ -36,6 +35,9 @@ mesh = SubResource("SphereMesh_753rh")
 
 [node name="SphereRepair" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 5)
+mesh = SubResource("SphereMesh_753rh")
+
+[node name="ImportRepair" type="MeshInstance3D" parent="."]
 mesh = SubResource("SphereMesh_753rh")
 
 [node name="CameraMan" parent="." instance=ExtResource("2_753rh")]
