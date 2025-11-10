@@ -23,7 +23,15 @@ func _ready() -> void:
 	
 	draw_sphere(Vector3(10, 10 , 10), 4, 16, 16)
 	
-	get_tree().current_scene.add_child(Mesh_Importer.read_off("res://Meshes/bunny.off"))
+	var imported_mesh: MeshInstance3D = Mesh_Importer.read_off("res://Meshes/buddha.off") 
+	
+	get_tree().current_scene.add_child(imported_mesh)
+	
+	imported_mesh.scale = Vector3.ONE
+	
+	var modified_mesh: ArrayMesh = imported_mesh.mesh
+	
+	Mesh_Importer.export_off(Mesh_Helpers._remove_random_faces(modified_mesh, 1000), "res://Meshes/export.off", true)
 	
 # -----------------------------
 # Simple Quad (1 rectangle made of 2 triangles)

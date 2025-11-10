@@ -1,93 +1,292 @@
+# ModGeo — Geometric Modeling examples (Godot)
 
-ModGeo — Geometric Modeling examples (Godot)
 =============================================
 
-This small Godot project contains example scripts to procedurally build basic 3D geometry (quads, fragmented rectangles, circles, cylinders, cones, spheres, etc.) and a simple camera controller for navigation.
+This Godot project demonstrates procedural 3D geometry generation, mesh import/export functionality for OFF file format, mesh manipulation tools, and a first-person camera controller. It includes both basic geometric primitives (quads, cylinders, spheres) and advanced mesh processing capabilities.
 
-Contents
+## Contents
+
 --------
 
-- `project.godot` — Godot project file (engine config: Godot 4.5 features flagged). The project main scene is configured in this file.
-- `Scenes/` — Godot scenes shipped with the project (camera and a test scene).
-- `Scripts/MeshBuilder.gd` — Procedural mesh generation utilities. Contains functions:
-	- `draw_simple_quad` — create one rectangular quad (two triangles).
-	- `draw_fragmented_rectangle` — create a subdivided rectangular grid of quads with alternating colors.
-	- `draw_circle` — create a filled circle on an arbitrary plane.
-	- `draw_cylindre` — create a capped cylinder between two points (different radii allowed).
-	- `draw_hourglass` — variation of cylinder with inverted normals for the second end.
-	- `draw_cone` — create a cone with base and sides.
-	- `draw_sphere` — generate a sphere from parallels/meridians.
-- `Scripts/cameraman.gd` — Camera3D controller for first-person style view with keyboard panning, mouse look, and zoom controls.
+### Project Files
 
-What is implemented
---------------------
+- `project.godot` — Godot project file (Godot 4.5 with Forward Plus renderer)
+- `icon.svg` — Project icon
+- `.editorconfig`, `.gitignore`, `.gitattributes` — Project configuration files
 
-- Multiple procedural geometry builders that create ArrayMesh objects and spawn `MeshInstance3D` nodes at runtime. These are currently called from `_ready()` in `MeshBuilder.gd` as example usages.
-- A camera controller that supports:
-	- Mouse look (cursor captured by default).
-	- WASD-like panning via configured input actions (`camera_left`, `camera_right`, `camera_up`, `camera_down`, `camera_high`, `camera_low`).
-	- Zooming in/out via mouse buttons mapped to `zoom_in` / `zoom_out` actions.
-	- Toggle viewport debug drawing with `P` and `M` keys.
-- The project file lists `config/features` containing `"4.5"` and `"Forward Plus"`, and `config_version=5`, meaning it targets Godot 4.x with 4.5 features enabled.
+### Scenes
 
-How to open and run the project
---------------------------------
+- `Scenes/camera_man.tscn` — Camera controller scene
+- `Scenes/Test_scene.tscn` — Main test scene demonstrating all geometry features
 
-Prerequisites
+### Scripts
 
-- Godot 4.2+ is recommended. The project `project.godot` references features flagged as `4.5`, so using Godot 4.4/4.5 will provide the best experience. If you only have 4.2/4.3, the project may still run but some optional features might be unavailable.
+#### MeshBuilder.gd
 
-1. Open the project in Godot
+Procedural mesh generation utilities. Contains functions:
 
-	- Start Godot and choose "Import" or "Open an existing project". Point it to the repository folder (the folder that contains `project.godot`).
+- `draw_simple_quad()` — Create a rectangular quad (two triangles)
+- `draw_fragmented_rectangle()` — Create a subdivided rectangular grid with configurable subdivisions
+- `draw_circle()` — Create a filled circle on an arbitrary plane with configurable number of sides
+- `draw_cylindre()` — Create a capped cylinder between two points (supports different top/bottom radii)
+- `draw_hourglass()` — Create an hourglass shape (cylinder with inverted end normals)
+- `draw_cone()` — Create a cone with circular base and apex point
+- `draw_sphere()` — Generate a UV sphere from parallels and meridians
 
-2. Run the main scene
+#### MeshImporter.gd
 
-	- The main scene is set in `project.godot`. You can press the Play button in the editor to run the configured main scene.
-	- Alternatively open `Scenes/Test_scene.tscn` (or `camera_man.tscn`) in the editor and press Play Scene to test individual scenes.
+OFF (Object File Format) import/export utilities:
 
-Controls (default)
+- `read_off()` — Import mesh from .off file format, automatically triangulates n-gons, calculates normals using Newell's method, generates spherical UV coordinates, normalizes mesh to [-1, 1] cube
+- `export_off()` — Export ArrayMesh to .off file format with vertex deduplication
+- `_calculate_spherical_uv()` — Helper for generating spherical UV mapping
 
-- Mouse movement: look around (mouse captured on start).
-- ESC (or action `ui_cancel`): release mouse cursor.
-- Movement keys (as configured in `project.godot` input map):
-	- camera_left: typically 'Q' or 'A' depending on mapping
-	- camera_right: typically 'D'
-	- camera_up: typically 'W'
-	- camera_down: typically 'S'
-	- camera_high: 'E'
-	- camera_low: 'Q' (see project input map for exact keys)
-- Zoom: mouse buttons mapped as `zoom_in` / `zoom_out` (scroll or mouse buttons depending on input map entries)
-- P: cycle viewport debug draw mode
-- M: set viewport debug draw to mode 4
+#### MeshHelpers.gd
 
-Notes about the code
---------------------
+Mesh manipulation and utility functions:
 
-- `MeshBuilder.gd` builds mesh data using `SurfaceTool` and `ArrayMesh`. Example calls are present in `_ready()` to show how to use the functions; remove or adapt those calls when integrating into other scenes.
-- UVs, normals, and colors are assigned in a basic way for demonstration purposes. Materials are `StandardMaterial3D` with backface culling disabled so single-sided primitives are visible from both sides during testing.
-- The geometry builders assume simple, non-degenerate inputs; no extensive validation is done. You can improve by adding parameter checks and error messages.
+- `_create_standard_material()` — Create a StandardMaterial3D with specified color and disabled backface culling
+- `_get_tangent_bitangent()` — Calculate tangent and bitangent vectors from a normal
+- `_make_mesh_instance()` — Create a MeshInstance3D from an ArrayMesh at specified position
+- `_commit_vertices_to_mesh()` — Commit vertex data to an ArrayMesh using SurfaceTool
+- `_commit_vertices_to_mesh_advanced()` — Advanced version with per-vertex color support
+- `_find_mesh_gravity_center()` — Calculate the geometric center of a mesh
+- `_normalise_mesh()` — Normalize mesh to fit within a [-1, 1] cube centered at origin
+- `_remove_random_faces()` — Remove a specified number of random faces from a mesh
 
-Troubleshooting
----------------
+#### cameraman.gd
 
-- If the project does not open or errors appear about incompatible `config/features`, try using a newer Godot 4.x editor (download Godot 4.5 or 4.4 nightly if needed).
-- If meshes don't appear, confirm the `MeshInstance3D` nodes created by the scripts were added to an active scene tree (scripts run from a node that is instanced in the active scene). You can also attach `MeshBuilder.gd` to a Node3D in your scene.
+Camera3D controller for first-person navigation:
 
-Suggested next steps / improvements
-----------------------------------
+- Mouse look with captured cursor
+- WASD movement controls
+- E/Q for vertical movement
+- Mouse wheel zoom
+- Debug viewport mode toggles (P and M keys)
 
-- Turn the example calls in `_ready()` into a demo scene that exposes parameters via exported variables so you can tweak radii, sides, and positions in the editor.
-- Add input validation and clearer errors for bad parameters.
-- Add normals calculation for all shapes (some already set for sphere) and better UV mapping for texturing.
-- Add unit tests (if you export utilities into a library or helper script) or a small demonstration scene that toggles different generated meshes interactively.
+### Meshes
 
-Files changed
--------------
+Sample .off format meshes included:
 
-- Updated: `README.md` — added project description and run instructions.
+- `buddha.off` — Buddha statue mesh
+- `bunny.off` — Stanford bunny mesh
+- `cube.off` — Simple cube
+- `plan.off` — Planar mesh
+- `export.off` — Example exported mesh (generated at runtime)
 
-Completion
-----------
+## Features
 
-I updated `README.md` with run instructions, feature list, and suggestions for next steps.
+--------
+
+### Procedural Geometry Generation
+
+- Multiple geometry builders that create ArrayMesh objects and spawn MeshInstance3D nodes at runtime
+- All primitives support custom colors, positions, orientations, and subdivision levels
+- Proper UV mapping and normal calculation for all generated geometry
+- Example calls in `MeshBuilder.gd` `_ready()` demonstrate all available shapes
+
+### Mesh Import/Export
+
+- **OFF Format Support**: Full read/write support for Object File Format (.off)
+- **Smart Import**: Automatic triangulation of polygonal faces, Newell's method for normal calculation, spherical UV generation, automatic mesh normalization
+- **Smart Export**: Vertex deduplication, proper OFF format compliance
+- **Example Pipeline**: Import mesh → modify → export demonstrated in `MeshBuilder.gd`
+
+### Mesh Manipulation
+
+- **Normalization**: Scale meshes to fit [-1, 1] cube while preserving aspect ratio
+- **Center Calculation**: Find geometric center of any mesh
+- **Face Removal**: Remove random faces for mesh decimation or stylistic effects
+- **Material Management**: Easy material creation and application utilities
+
+### Camera Controls
+
+- Mouse look with cursor capture (ESC to release)
+- Keyboard navigation:
+  - **W/S** (or Arrow Up/Down): Forward/Backward
+  - **A/D** (or Arrow Left/Right): Strafe Left/Right
+  - **E**: Move up
+  - **Q**: Move down
+- Mouse wheel: Zoom in/out
+- **P**: Cycle viewport debug draw modes
+- **M**: Set viewport debug draw to mode 4
+
+### Technical Details
+
+- Targets Godot 4.5 with Forward Plus renderer
+- Uses SurfaceTool and ArrayMesh for efficient geometry generation
+- All helper functions are static for easy reuse
+- Backface culling disabled on generated materials for easier debugging
+
+## How to Run
+
+--------
+
+### Prerequisites
+
+- **Godot 4.4 or 4.5** recommended (project uses 4.5 features)
+- Godot 4.2/4.3 may work but with limited feature support
+
+### Steps
+
+1. **Import Project**
+   - Launch Godot Engine
+   - Click "Import" and navigate to the project folder
+   - Select `project.godot`
+
+2. **Run the Demo**
+   - Click the "Play" button (F5) to run the main scene
+   - Or open `Scenes/Test_scene.tscn` and press "Play Scene" (F6)
+
+3. **Explore the Demo**
+   - You'll see multiple procedurally generated shapes
+   - An imported bunny mesh from the OFF file
+   - Use camera controls to navigate the scene
+
+### Usage Examples
+
+**Generate Custom Geometry:**
+
+```gdscript
+# In any Node3D script
+draw_sphere(Vector3(0, 5, 0), 2.0, 16, 16, Color.RED)
+draw_cylindre(Vector3(0, 0, 0), 1.0, 1.5, Vector3(0, 3, 0), 32)
+```
+
+**Import/Export Meshes:**
+
+```gdscript
+# Import an OFF file
+var mesh_instance = Mesh_Importer.read_off("res://Meshes/bunny.off")
+add_child(mesh_instance)
+
+# Export to OFF format
+var array_mesh: ArrayMesh = mesh_instance.mesh
+Mesh_Importer.export_off(array_mesh, "res://Meshes/output.off", true)
+```
+
+**Manipulate Meshes:**
+
+```gdscript
+# Remove 10 random faces from a mesh
+var modified = Mesh_Helpers._remove_random_faces(original_mesh, 10)
+
+# Normalize mesh to unit cube
+var normalized = Mesh_Helpers._normalise_mesh(mesh, center)
+```
+
+## Code Architecture
+
+--------
+
+### Design Patterns
+
+- **Static Helper Functions**: `MeshImporter` and `MeshHelpers` use static methods for easy access without instantiation
+- **SurfaceTool Pipeline**: Consistent use of SurfaceTool for vertex data management
+- **Modular Design**: Each geometry type is self-contained in its own function
+
+### Key Implementation Details
+
+- **Normal Calculation**: Newell's method used for robust normal calculation on arbitrary polygons
+- **UV Mapping**: Spherical projection for imported meshes, parametric UVs for generated geometry
+- **Mesh Normalization**: Preserves aspect ratio while fitting to standard bounds
+- **Vertex Deduplication**: Export function eliminates duplicate vertices for efficient file output
+
+### File Format
+
+The OFF (Object File Format) implementation supports:
+
+- Header: `OFF` magic number
+- Counts: vertex count, face count, edge count (always 0)
+- Vertices: x y z coordinates (one per line)
+- Faces: vertex_count vertex_indices (triangles only on export)
+
+## Troubleshooting
+
+--------
+
+### Project Won't Open
+
+- **Error**: Incompatible `config/features`
+- **Solution**: Use Godot 4.4 or 4.5. Download from [godotengine.org](https://godotengine.org)
+
+### Meshes Don't Appear
+
+- **Issue**: MeshInstance3D nodes not visible
+- **Checks**:
+  - Ensure the script is attached to a Node3D in an active scene
+  - Verify `get_tree().current_scene` is valid when creating meshes
+  - Check console for errors during mesh generation
+
+### Import/Export Errors
+
+- **File Access Errors**: Ensure file paths use `res://` prefix for project files
+- **Invalid OFF Format**: Verify OFF files start with "OFF" header and have correct vertex/face counts
+- **Permission Errors**: Check file permissions when exporting
+
+### Performance Issues
+
+- **Too Many Faces**: Reduce subdivision counts (sides, parallels, meridians parameters)
+- **Large Imported Meshes**: Consider using lower-resolution models for testing
+
+## Potential Improvements
+
+--------
+
+### New Features
+
+- **Advanced Mesh Operations**: Mesh subdivision, smoothing, edge collapse
+- **More File Formats**: PLY, OBJ, STL import/export
+- **Interactive Demo**: UI controls to adjust geometry parameters in real-time
+- **Mesh Analysis**: Face/edge/vertex counting, bounding box calculation, surface area
+- **Advanced Decimation**: Quadric error metrics for better face removal
+- **Texture Support**: UV editing, texture coordinate generation options
+
+### Code Quality
+
+- **Parameter Validation**: Add bounds checking and error messages for invalid inputs
+- **Unit Tests**: Add automated tests for import/export round-trip accuracy
+- **Documentation**: Add inline comments and GDScript documentation strings
+- **Performance**: Optimize vertex deduplication with spatial hashing
+- **Editor Integration**: Custom inspector plugins for mesh manipulation
+
+### User Experience
+
+- **Exported Variables**: Expose geometry parameters in the editor for tweaking without code changes
+- **Gizmos**: Visual handles for manipulating geometry in the viewport
+- **Material Presets**: Library of common materials for generated geometry
+- **Save/Load**: Save generated geometry configurations
+
+## Project Structure
+
+--------
+
+```text
+mod-geo/
+├── .editorconfig
+├── .gitattributes
+├── .gitignore
+├── icon.svg
+├── project.godot
+├── README.md
+├── Meshes/
+│   ├── buddha.off        # Sample mesh
+│   ├── bunny.off          # Sample mesh
+│   ├── cube.off           # Sample mesh
+│   ├── plan.off           # Sample mesh
+│   └── export.off         # Runtime generated
+├── Scenes/
+│   ├── camera_man.tscn    # Camera controller
+│   └── Test_scene.tscn    # Main demo scene
+└── Scripts/
+    ├── MeshBuilder.gd     # Procedural geometry
+    ├── MeshImporter.gd    # OFF import/export
+    ├── MeshHelpers.gd     # Mesh utilities
+    └── cameraman.gd       # Camera controller
+```
+
+## License
+
+--------
+
+This project is provided as educational example code. Feel free to use and modify for your own projects.

@@ -1,18 +1,28 @@
-[gd_scene load_steps=7 format=3 uid="uid://dsfv3v1r3twu5"]
+[gd_scene load_steps=10 format=3 uid="uid://dsfv3v1r3twu5"]
 
 [ext_resource type="Script" uid="uid://0fuoo6waljbx" path="res://Scripts/MeshBuilder.gd" id="1_02jwc"]
 [ext_resource type="PackedScene" uid="uid://cbw0rfdb6cei3" path="res://Scenes/camera_man.tscn" id="2_753rh"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_753rh"]
-albedo_color = Color(0, 1, 1, 1)
+albedo_color = Color(0.13671863, 0.3008964, 0.22928193, 1)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_753rh"]
 material = SubResource("StandardMaterial3D_753rh")
 size = Vector2(50, 50)
 
 [sub_resource type="SphereMesh" id="SphereMesh_753rh"]
-radius = 0.1
-height = 0.2
+radius = 0.05
+height = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mw2no"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g1f5i"]
+transparency = 1
+albedo_color = Color(0, 1, 0, 0.5254902)
+
+[sub_resource type="BoxMesh" id="BoxMesh_0lt7i"]
+size = Vector3(2, 2, 2)
 
 [sub_resource type="Environment" id="Environment_753rh"]
 
@@ -37,8 +47,14 @@ mesh = SubResource("SphereMesh_753rh")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 5)
 mesh = SubResource("SphereMesh_753rh")
 
-[node name="ImportRepair" type="MeshInstance3D" parent="."]
+[node name="Import" type="MeshInstance3D" parent="."]
+material_override = SubResource("StandardMaterial3D_mw2no")
 mesh = SubResource("SphereMesh_753rh")
+
+[node name="ImportBorder" type="MeshInstance3D" parent="."]
+visible = false
+material_override = SubResource("StandardMaterial3D_g1f5i")
+mesh = SubResource("BoxMesh_0lt7i")
 
 [node name="CameraMan" parent="." instance=ExtResource("2_753rh")]
 transform = Transform3D(1, 0, 0, 0, 0.087155804, 0.9961947, 0, -0.9961947, 0.087155804, 0, 1, 0)
