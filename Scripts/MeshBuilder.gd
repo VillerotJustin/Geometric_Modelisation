@@ -23,7 +23,7 @@ func _ready() -> void:
 	
 	draw_sphere(Vector3(10, 10 , 10), 4, 16, 16)
 	
-	var imported_mesh: MeshInstance3D = Mesh_Importer.read_off("res://Meshes/buddha.off") 
+	var imported_mesh: MeshInstance3D = Mesh_Importer.read_off("res://Meshes/bunny.off") 
 	
 	get_tree().current_scene.add_child(imported_mesh)
 	

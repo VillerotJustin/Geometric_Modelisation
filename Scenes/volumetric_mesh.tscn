@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ch1wu1flaxjgw"]
+
+[ext_resource type="Script" uid="uid://cp3wh0h6gbard" path="res://Scripts/Volumetric/Volumetric_Modeling.gd" id="1_3q58x"]
+
+[node name="VolumetricMesh" type="Node3D"]
+script = ExtResource("1_3q58x")

@@ -1,5 +1,3 @@
-extends Node
-
 class_name Mesh_Importer
 
 # Helper function to calculate spherical UVs for a vertex

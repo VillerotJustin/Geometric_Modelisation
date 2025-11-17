@@ -1,5 +1,3 @@
-extends Node
-
 class_name Mesh_Helpers
 
 # -----------------------------
@@ -19,7 +17,7 @@ static func _get_tangent_bitangent(normal: Vector3) -> Array:
 		tangent = n.cross(Vector3(0, 1, 0))
 	return [tangent.normalized(), n.cross(tangent).normalized()]
 
-static func _make_mesh_instance(mesh: ArrayMesh, position: Vector3) -> MeshInstance3D:
+static func _make_mesh_instance(mesh: Mesh, position: Vector3) -> MeshInstance3D:
 	var mi:MeshInstance3D = MeshInstance3D.new()
 	mi.position = position
 	mi.mesh = mesh

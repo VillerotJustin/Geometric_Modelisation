@@ -1,7 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://cbw0rfdb6cei3"]
-
-[ext_resource type="Script" uid="uid://3cvtipyix1iv" path="res://Scripts/cameraman.gd" id="1_68fct"]
-
-[node name="CameraMan" type="Camera3D"]
-transform = Transform3D(1, 0, 0, 0, 0.087155804, 0.9961947, 0, -0.9961947, 0.087155804, 0, 0, 0)
-script = ExtResource("1_68fct")
