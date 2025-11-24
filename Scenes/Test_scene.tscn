@@ -68,6 +68,7 @@ shadow_enabled = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 15, 0)
 max_subdivision = 6
 
-[node name="CameraMan" type="Camera3D" parent="."]
+[node name="CameraMan" type="Camera3D" parent="." node_paths=PackedStringArray("volumetrick_mesh")]
 script = ExtResource("3_g1f5i")
+volumetrick_mesh = NodePath("../VolumetricMesh")
 metadata/_custom_type_script = "uid://3cvtipyix1iv"

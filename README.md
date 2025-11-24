@@ -111,6 +111,19 @@ Sample .off format meshes included:
 - **P**: Cycle viewport debug draw modes
 - **M**: Set viewport debug draw to mode 4
 
+### Volumetric Modeling & Brush Tool
+
+- **Overview**: The project includes an interactive volumetric modeling system (`VolumetricModeling`) that builds a voxelized octree from a list of spheres and renders the resulting volume. Spheres can be combined using operations: UNION, INTERSECTION, and SUBTRACTION.
+- **Setup**: To use the brush tool, place a `VolumetricModeling` node in your scene and assign it to the `CameraMan` exported property `volumetrick_mesh` (select the camera node in the editor and drag the Volumetric node into the `volumetrick_mesh` slot).
+- **Brush preview**: Hold `T` while in-game to display a translucent preview sphere in front of the camera. The preview shows the brush position (in camera local -Z direction) and its radius.
+- **Add/Remove spheres**:
+  - Press `O` to add a UNION sphere at the preview position (adds volume).
+  - Press `L` to add a SUBTRACTION sphere at the preview position (carves/removes volume).
+  - After adding a sphere the volumetric node will re-build and re-render the combined octree (the code calls `render_spheres_as_one()` internally).
+- **Brush parameters**: The camera script exposes `brush_radius` and `brush_distance` exported variables to tweak size and distance of the preview brush.
+
+These interactive controls make it easy to paint additions and carve-outs into the procedural volume at runtime for quick experimentation.
+
 ### Technical Details
 
 - Targets Godot 4.5 with Forward Plus renderer

@@ -27,6 +27,16 @@ class_name CameraMan
 @export var torch_intensity: float = 1.0          ## Torch light intensity
 @export var torch_range: float = 10.0             ## Torch light range
 
+@export_group("Tools")
+@export var volumetrick_mesh: VolumetricModeling
+
+# Brush settings (for simple brush/preview in front of the camera)
+@export var brush_radius: float = 0.5
+@export var brush_distance: float = 2.0
+
+var brush_sphere: MeshInstance3D = null
+var brush_visible := false
+
 var lamp_torch: SpotLight3D
 var rotation_x := 0.0
 var rotation_y := 0.0
@@ -92,6 +102,12 @@ func _physics_process(delta: float) -> void:
 	_handle_zoom()
 	_handle_light()
 
+func _process(delta: float) -> void:
+	# Keep the preview brush positioned in front of the camera while visible
+	if brush_sphere and brush_visible:
+		brush_sphere.position = Vector3(0, 0, -brush_distance)
+		brush_sphere.scale = Vector3.ONE * brush_radius
+
 func _handle_movement(delta: float) -> void:
 	var move_dir := Vector3.ZERO
 	var current_speed := speed
@@ -145,6 +161,76 @@ func _input(event: InputEvent) -> void:
 		var vp = get_viewport()
 		vp.debug_draw = 4  # Wireframe mode
 		print("Debug draw mode: Wireframe")
+
+	# Toggle transient translucent brush preview while T is held
+	elif event is InputEventKey and event.keycode == KEY_T:
+		if event.pressed:
+			_show_brush(true)
+		else:
+			_show_brush(false)
+
+	# Add SUBTRACTION sphere to volumetric model at brush location
+	elif event is InputEventKey and event.pressed and event.keycode == KEY_L:
+		# Reduce brush radius slightly
+		if volumetrick_mesh:
+			var world_pos = global_transform.origin + -transform.basis.z * brush_distance
+			var local_pos = volumetrick_mesh.to_local(world_pos)
+			volumetrick_mesh.centers.append(local_pos)
+			volumetrick_mesh.radiuses.append(brush_radius)
+			volumetrick_mesh.operations.append(VolumetricModeling.Operation.SUBTRACTION)
+			if volumetrick_mesh.has_method("render_spheres_as_one"):
+				volumetrick_mesh.render_spheres_as_one()
+			print("Added union sphere at", local_pos)
+		else:
+			print("No VolumetricModeling node assigned to `volumetrick_mesh`")
+
+	# Add union sphere to volumetric model at brush location
+	elif event is InputEventKey and event.pressed and event.keycode == KEY_O:
+		# Increase brush radius slightly
+		if volumetrick_mesh:
+			var world_pos2 = global_transform.origin + -transform.basis.z * brush_distance
+			var local_pos2 = volumetrick_mesh.to_local(world_pos2)
+			volumetrick_mesh.centers.append(local_pos2)
+			volumetrick_mesh.radiuses.append(brush_radius)
+			volumetrick_mesh.operations.append(VolumetricModeling.Operation.UNION)
+			if volumetrick_mesh.has_method("render_spheres_as_one"):
+				volumetrick_mesh.render_spheres_as_one()
+			print("Added union sphere at", local_pos2)
+		else:
+			print("No VolumetricModeling node assigned to `volumetrick_mesh`")
+
+
+func _create_brush_sphere() -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	var sm := SphereMesh.new()
+	sm.radius = 1.0
+	sm.height = 2.0
+	sm.radial_segments = 16
+	sm.rings = 8
+	mi.mesh = sm
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	mi.visible = false
+	# Simple translucent material
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.0, 0.6, 1.0, 0.35)
+	mat.flags_transparent = true
+	mi.material_override = mat
+	return mi
+
+
+func _show_brush(show: bool) -> void:
+	brush_visible = show
+	if show:
+		if not brush_sphere:
+			brush_sphere = _create_brush_sphere()
+			add_child(brush_sphere)
+		# Position in front of camera in local coordinates
+		brush_sphere.position = Vector3(0, 0, -brush_distance)
+		brush_sphere.scale = Vector3.ONE * brush_radius
+		brush_sphere.visible = true
+	else:
+		if brush_sphere:
+			brush_sphere.visible = false
 
 func get_controls_help() -> String:
 	var help_text = """

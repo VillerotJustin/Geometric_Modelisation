@@ -68,6 +68,10 @@ func render_spheres_as_one() -> void:
 	# Initialize octrees array
 	octrees.resize(1)
 	
+	print("Killing all childrens")
+	clear_existing_meshes()
+	
+	
 	print("Building combined octree with ", centers.size(), " spheres")
 	print("Centers: ", centers)
 	print("Radiuses: ", radiuses)

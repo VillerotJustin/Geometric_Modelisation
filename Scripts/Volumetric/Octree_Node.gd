@@ -63,7 +63,7 @@ func build_childrens_sphere(sphere_center: Vector3, sphere_radius: float, curren
 		childrens.clear()
 
 # Helper function to check if a cube intersects with a sphere
-func _cube_intersects_sphere(cube_center: Vector3, cube_half_size: float, sphere_center: Vector3, sphere_radius: float) -> bool:
+static func _cube_intersects_sphere(cube_center: Vector3, cube_half_size: float, sphere_center: Vector3, sphere_radius: float) -> bool:
 	# Find the closest point on the cube to the sphere center
 	var closest_point = Vector3()
 	# cube_half_size is already the radius/half-size, don't divide again
@@ -83,21 +83,22 @@ static func build_sphere_octree(sphere_center: Vector3, sphere_radius: float, ma
 	root_octree.build_childrens_sphere(sphere_center, sphere_radius, max_div)
 	return root_octree
 	
-static func is_voxel_in_a_sphere(voxel_center: Vector3, sphere_centers: Array[Vector3], sphere_radiuses: Array[float], operations: Array[VolumetricModeling.Operation]) -> bool:
+static func is_voxel_in_a_sphere(voxel_center: Vector3, cube_half_size: float, sphere_centers: Array[Vector3], sphere_radiuses: Array[float], operations: Array[VolumetricModeling.Operation]) -> bool:
+	# If no spheres, voxel is empty
 	if sphere_centers.is_empty():
 		return false
-	
+
 	var intersections: Array[bool]
 	intersections.resize(sphere_centers.size())
-	
-	# Calculate which spheres the voxel is inside
+
+	# Calculate which spheres the voxel (cube) intersects with using cube-sphere test
 	for idx in range(sphere_centers.size()):
-		intersections[idx] = (voxel_center - sphere_centers[idx]).length_squared() <= pow(sphere_radiuses[idx], 2)
-	
-	# Start with first sphere (should always be UNION for base)
+		intersections[idx] = _cube_intersects_sphere(voxel_center, cube_half_size, sphere_centers[idx], sphere_radiuses[idx])
+
+	# Start with first sphere (should usually be UNION for base)
 	var result: bool = intersections[0]
-	
-	# Apply subsequent operations
+
+	# Apply subsequent operations in order
 	for idx in range(1, sphere_centers.size()):
 		match operations[idx]:
 			VolumetricModeling.Operation.UNION:
@@ -105,8 +106,9 @@ static func is_voxel_in_a_sphere(voxel_center: Vector3, sphere_centers: Array[Ve
 			VolumetricModeling.Operation.INTERSECTION:
 				result = result and intersections[idx]
 			VolumetricModeling.Operation.SUBTRACTION:
+				# Subtraction removes any voxel that intersects the subtraction sphere
 				result = result and not intersections[idx]
-			
+
 	return result
 	
 func build_childrens_spheres(sphere_centers: Array[Vector3], sphere_radiuses: Array[float], operations: Array[VolumetricModeling.Operation], current_subdivision: int = 5) -> void:
@@ -114,8 +116,10 @@ func build_childrens_spheres(sphere_centers: Array[Vector3], sphere_radiuses: Ar
 	if current_subdivision <= 0:
 		return
 	
-	# Check if this octree node (cube) intersects with the sphere
-	is_empty = not is_voxel_in_a_sphere(center, sphere_centers, sphere_radiuses, operations)
+	# Check if this octree node (cube) intersects with the set of spheres
+	# Use the node's half-size (radius / 2.0) when testing
+	var node_half_size = radius / 2.0
+	is_empty = not is_voxel_in_a_sphere(center, node_half_size, sphere_centers, sphere_radiuses, operations)
 	
 	# Initialize children array with 8 elements
 	childrens.resize(8)
@@ -132,7 +136,9 @@ func build_childrens_spheres(sphere_centers: Array[Vector3], sphere_radiuses: Ar
 				var offset_z = (FORWARD_BACK - 0.5) * half_radius
 				
 				var child_center: Vector3 = center + Vector3(offset_x, offset_y, offset_z)
-				var child_empty: bool = not is_voxel_in_a_sphere(child_center, sphere_centers, sphere_radiuses, operations)
+				# Child node's side is half_radius, so its half-size is half_radius / 2
+				var child_half_size = half_radius / 2.0
+				var child_empty: bool = not is_voxel_in_a_sphere(child_center, child_half_size, sphere_centers, sphere_radiuses, operations)
 				
 				childrens[idx_counter] = OctreeNode.new(child_center, half_radius, child_empty, max_subdivision, voxel_scale)
 				childrens[idx_counter].build_childrens_spheres(sphere_centers, sphere_radiuses, operations, current_subdivision - 1)
