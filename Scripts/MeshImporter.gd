@@ -164,6 +164,158 @@ static func read_off(file_path: String) -> MeshInstance3D:
 	
 	return mi
 
+static func read_off_mesh(file_path: String) -> Mesh:
+	print("Importing mesh from .off at : "+ file_path)
+	var mesh_file: FileAccess = FileAccess.open(file_path, FileAccess.READ)
+	
+	if mesh_file == null:
+		push_error("Failed to open file: %s" % file_path)
+		return ArrayMesh.new()
+	
+	var line:String = mesh_file.get_line()
+	if line != "OFF":
+		push_error("File %s isn't and OFF file" % file_path)
+		mesh_file.close()
+		return ArrayMesh.new()
+	
+	# Get Mesh info (the number of vertices, number of faces, and number of edges (potentialy 0))
+	line = mesh_file.get_line()
+	var header_info:PackedStringArray = line.split(" ", true)
+	if header_info.size() != 3:
+		push_error("File %s header are invalid" % file_path)
+		return
+	var n_verts: int = header_info[0].to_int()
+	var n_faces: int = header_info[1].to_int()
+	var _n_edges: int = header_info[2].to_int()
+	
+	# Extracting vertices
+	var vertices: PackedVector3Array
+	
+	for i in range(n_verts):
+		var split_line: PackedStringArray = mesh_file.get_line().split(" ")
+		if split_line.size() != 3 :
+			push_error("File %s vertices wrongly fformated" % file_path)
+			return
+		vertices.append(Vector3(
+			split_line[0].to_float(),
+			split_line[1].to_float(),
+			split_line[2].to_float()
+		))
+	
+	# Extracting faces
+	var faces: Array[Dictionary]
+	
+	for i in range(n_faces):
+		var r_line: String = mesh_file.get_line().strip_edges()
+		var split_line: PackedStringArray = r_line.split(" ", true)
+		var number_vertix: int = split_line[0].to_int()
+		
+		if split_line.size() != number_vertix + 1 and split_line.size() != number_vertix+4:
+			push_error("File %s vertices wrongly formated" % file_path)
+			return
+		var vertixes: Array[int]
+		for v in range(number_vertix):
+			vertixes.append(split_line[1+v].to_int())
+		
+		# Get color if exist
+		var color: Color = Color.BLACK
+		if split_line.size() == 3 + number_vertix + 1:
+			color = Color(split_line[1 + number_vertix + 1].to_float(), split_line[1 + number_vertix + 2].to_float(), split_line[1 + number_vertix + 3].to_float())
+		
+		faces.append({
+			"vertex_numbers": number_vertix,
+			"vertexes": vertixes,
+			"color": color
+		})
+	
+	# Extracting edges
+	# TODO might be useless
+	
+	mesh_file.close()
+
+	# Calculating center of the mesh
+	var center: Vector3 = Vector3.ZERO
+	for v in vertices:
+		center += v
+	center /= vertices.size()
+	
+	var mesh: ArrayMesh = ArrayMesh.new()
+	
+	# Making final lists
+	var processed_vertices: PackedVector3Array = PackedVector3Array()
+	var processed_normals: PackedVector3Array = PackedVector3Array()
+	var processed_color: PackedColorArray = PackedColorArray()
+	var processed_uvs: PackedVector2Array = PackedVector2Array()
+	
+	for face in faces:
+		#print(face)
+		var nx:float = 0
+		var ny:float = 0
+		var nz:float = 0
+		
+		# Calculating normal With Newell's method
+		for vi_index in range(face["vertex_numbers"]):
+			var vi = face["vertexes"][vi_index]
+			var vi_next = face["vertexes"][(vi_index + 1) % face["vertex_numbers"]]
+
+			nx += (vertices[vi].y - vertices[vi_next].y) * (vertices[vi].z + vertices[vi_next].z)
+			ny += (vertices[vi].z - vertices[vi_next].z) * (vertices[vi].x + vertices[vi_next].x)
+			nz += (vertices[vi].x - vertices[vi_next].x) * (vertices[vi].y + vertices[vi_next].y)
+			
+		# Calculate normal of face
+		var normal:Vector3 = -Vector3(nx, ny, nz).normalized()
+
+		# Triangulate face using fan method
+		# All triangles share the first vertex
+		var v0_index: int = face["vertexes"][0]
+		for tri_index in range(1, face["vertex_numbers"] - 1):
+			var v1_index: int = face["vertexes"][tri_index]
+			var v2_index: int = face["vertexes"][tri_index + 1]
+			
+			# Add triangle vertices
+			processed_vertices.append(vertices[v0_index])
+			processed_vertices.append(vertices[v1_index])
+			processed_vertices.append(vertices[v2_index])
+
+			# Add colors (same for all three vertices of this triangle)
+			processed_color.append(face["color"])
+			processed_color.append(face["color"])
+			processed_color.append(face["color"])
+
+			# Add normals
+			processed_normals.append(normal)
+			processed_normals.append(normal)
+			processed_normals.append(normal)
+
+			# Add UVs using spherical projection
+			processed_uvs.append(_calculate_spherical_uv(vertices[v0_index], center))
+			processed_uvs.append(_calculate_spherical_uv(vertices[v1_index], center))
+			processed_uvs.append(_calculate_spherical_uv(vertices[v2_index], center))
+
+	
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0, 0.8, 0.8, 1)
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	#mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	st.set_material(mat)
+	
+	for i in range(processed_vertices.size()):
+		st.set_normal(processed_normals[i])
+		st.set_color(processed_color[i])
+		st.set_uv(processed_uvs[i])
+		st.add_vertex(processed_vertices[i])
+	
+	mesh = st.commit()
+	
+	var gravity_center: Vector3 = Mesh_Helpers._find_mesh_gravity_center(mesh)
+	
+	var normalised_mesh:ArrayMesh = Mesh_Helpers._normalise_mesh(mesh, gravity_center)
+	
+	return normalised_mesh
+
+
 static func export_off(mesh: ArrayMesh, file_path: String, overwrite: bool = false) -> void:
 	print("Exporting ", mesh, " to ", file_path)
 	
