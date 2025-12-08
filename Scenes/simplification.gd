@@ -39,15 +39,15 @@ func _ready() -> void:
 	
 	add_control_mesh()
 
-	add_simplification()
+	add_simplification(0.1, Vector3(2, 0, 0), "Simplified 0.1")
 	
-	add_simplification(0.2, Vector3(4, 0, 0), "Simplified 0.2")
+	add_simplification(0.15, Vector3(4, 0, 0), "Simplified 0.15")
 	
-	add_simplification(0.4, Vector3(6, 0, 0), "Simplified 0.4")
+	add_simplification(0.2, Vector3(6, 0, 0), "Simplified 0.2")
 	
-	add_simplification(0.8, Vector3(8, 0, 0), "Simplified 0.8")
+	add_simplification(0.25, Vector3(8, 0, 0), "Simplified 0.25")
 	
-	add_simplification(1.6, Vector3(10, 0, 0), "Simplified 1.6")
+	add_simplification(0.3, Vector3(10, 0, 0), "Simplified 0.3")
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed:
