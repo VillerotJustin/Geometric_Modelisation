@@ -49,7 +49,7 @@ This Godot project demonstrates procedural 3D geometry generation, mesh import/e
 *Octree-based volumetric modeling system*
 
 ![Volumetric Operations](Screenshot/Volumetric_Modelisation_Addition_n_Substraction.png)
-*Union, intersection, and subtraction operations*
+*Union, and subtraction operations with the brush tool*
 
 ## Contents
 
