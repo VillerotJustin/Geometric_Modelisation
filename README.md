@@ -4,6 +4,53 @@
 
 This Godot project demonstrates procedural 3D geometry generation, mesh import/export functionality for OFF file format, mesh manipulation tools, and a first-person camera controller. It includes both basic geometric primitives (quads, cylinders, spheres) and advanced mesh processing capabilities.
 
+## Screenshots
+
+--------
+
+### Test Scene
+
+![Test Scene](Screenshot/Test_Scene.png)
+*Main test scene with procedurally generated geometry*
+
+![Test Scene Wireframe](Screenshot/Test_Scene_WireMode.png)
+*Wireframe view of the test scene*
+
+### Subdivision
+
+![Subdivision Initial](Screenshot/Subdivision_0.png)
+*Initial randomized icosahedron*
+
+![Subdivision Level 1](Screenshot/Subdivision_1.png)
+*After one iteration of Loop subdivision*
+
+![Subdivision Level 2](Screenshot/Subdivision_2.png)
+*After two iterations of Loop subdivision*
+
+### Simplification
+
+![Simplification Overview](Screenshot/Simplification.png)
+*Grid-based mesh simplification with multiple tolerance levels*
+
+![Simplification Grid](Screenshot/Simplification_Grid.png)
+*Spatial grid visualization for mesh analysis*
+
+![Simplification Occupancy](Screenshot/Simplification_Occupancy.png)
+*Color-coded vertex density in grid cells*
+
+### Curve Subdivision
+
+![Chaikin Curve](Screenshot/Chaikin_Curve.png)
+*Chaikin corner-cutting algorithm for smooth curves*
+
+### Volumetric Modeling
+
+![Volumetric Modeling](Screenshot/Volumetric_Modelisation.png)
+*Octree-based volumetric modeling system*
+
+![Volumetric Operations](Screenshot/Volumetric_Modelisation_Addition_n_Substraction.png)
+*Union, intersection, and subtraction operations*
+
 ## Contents
 
 --------
