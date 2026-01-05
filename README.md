@@ -18,6 +18,9 @@ This Godot project demonstrates procedural 3D geometry generation, mesh import/e
 
 - `Scenes/camera_man.tscn` — Camera controller scene
 - `Scenes/Test_scene.tscn` — Main test scene demonstrating all geometry features
+- `Scenes/Subdivision.tscn` — Loop subdivision demonstration scene
+- `Scenes/Simplification.tscn` — Grid-based mesh simplification scene
+- `Scenes/volumetric_mesh.tscn` — Volumetric modeling scene
 
 ### Scripts
 
@@ -28,7 +31,7 @@ Procedural mesh generation utilities. Contains functions:
 - `draw_simple_quad()` — Create a rectangular quad (two triangles)
 - `draw_fragmented_rectangle()` — Create a subdivided rectangular grid with configurable subdivisions
 - `draw_circle()` — Create a filled circle on an arbitrary plane with configurable number of sides
-- `draw_cylindre()` — Create a capped cylinder between two points (supports different top/bottom radii)
+- `draw_cylindre()` — Create a capped cylinder between two points (supports different top/top radii)
 - `draw_hourglass()` — Create an hourglass shape (cylinder with inverted end normals)
 - `draw_cone()` — Create a cone with circular base and apex point
 - `draw_sphere()` — Generate a UV sphere from parallels and meridians
@@ -53,6 +56,41 @@ Mesh manipulation and utility functions:
 - `_find_mesh_gravity_center()` — Calculate the geometric center of a mesh
 - `_normalise_mesh()` — Normalize mesh to fit within a [-1, 1] cube centered at origin
 - `_remove_random_faces()` — Remove a specified number of random faces from a mesh
+
+#### subdivision.gd
+
+Loop subdivision implementation for mesh refinement:
+
+- `create_start_shape()` — Creates a randomized icosahedron as starting geometry
+- `subdivision()` — Performs one iteration of Loop subdivision with midpoint caching
+- `apply_loop_smoothing()` — Applies Warren's smoothing formula to subdivided vertices
+- `get_or_create_midpoint()` — Efficient edge midpoint creation with caching to avoid duplicates
+- Per-face random colors with individual vertex randomization
+- Interactive controls: **Enter** to subdivide, **Backspace** to regenerate starting shape
+
+#### simplification.gd
+
+Grid-based mesh simplification system:
+
+- `create_simplified_mesh()` — Simplifies meshes using spatial grid vertex averaging
+- `build_grid()` — Creates 3D spatial grid visualization for analyzing mesh structure
+- `visualize_grid_occupancy()` — Shows grid cells with color-coded vertex density
+- Configurable tolerance epsilon for grid resolution
+- Multiple simplification levels demonstration (0.1 to 0.3)
+- Interactive keyboard controls:
+  - `1` Toggle control grid, `2` Toggle control occupancy
+  - `3` Toggle simplified grid, `4` Toggle simplified occupancy
+  - `G` Toggle all grids, `O` Toggle all occupancy, `H` Show help
+
+#### chaikin_curve.gd
+
+Chaikin curve subdivision algorithm for smooth curve generation:
+
+- `@tool` script that runs in the Godot editor
+- `chaikin_subdivision()` — Applies corner-cutting algorithm to Path3D points
+- Configurable iteration count for smoothness control
+- Automatic child curve updates
+- Works with Path3D nodes for visualization
 
 #### cameraman.gd
 
@@ -84,6 +122,29 @@ Sample .off format meshes included:
 - All primitives support custom colors, positions, orientations, and subdivision levels
 - Proper UV mapping and normal calculation for all generated geometry
 - Example calls in `MeshBuilder.gd` `_ready()` demonstrate all available shapes
+
+### Mesh Subdivision
+
+- **Loop Subdivision**: Implements the Loop subdivision surface algorithm for smooth mesh refinement
+- **Edge Midpoint Caching**: Efficient subdivision by reusing shared edge midpoints
+- **Warren's Smoothing**: Applies proper smoothing weights based on vertex valence
+- **Randomized Starting Shapes**: Creates varied icosahedra with per-vertex randomization
+- **Interactive Refinement**: Real-time subdivision with keyboard controls
+
+### Mesh Simplification
+
+- **Grid-Based Simplification**: Spatial grid approach for vertex clustering and averaging
+- **Configurable Tolerance**: Adjustable epsilon parameter controls simplification level
+- **Visual Grid Analysis**: Interactive visualization of spatial grid and vertex occupancy
+- **Multiple Comparison Levels**: Side-by-side comparison of different simplification settings
+- **Vertex Density Visualization**: Color-coded cubes show vertex distribution in grid cells
+
+### Curve Subdivision
+
+- **Chaikin Algorithm**: Corner-cutting subdivision for smooth curve generation
+- **Editor Integration**: `@tool` script provides real-time curve editing in Godot editor
+- **Path3D Support**: Works directly with Godot's Path3D nodes for easy integration
+- **Configurable Iterations**: Control smoothness through subdivision iteration count
 
 ### Mesh Import/Export
 
