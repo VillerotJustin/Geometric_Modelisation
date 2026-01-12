@@ -73,8 +73,8 @@ func chaikin_subdivision(points: Array[Vector3], iterations: int) -> Array:
 				new_result.append(working_point)
 				continue
 			
-			var new_point_1: Vector3 = working_point + (1.0/3.0) * direction
-			var new_point_2: Vector3 = working_point + (2.0/3.0) * direction
+			var new_point_1: Vector3 = working_point + (1.0/4.0) * direction
+			var new_point_2: Vector3 = working_point + (3.0/4.0) * direction
 			
 			new_result.append(new_point_1)
 			new_result.append(new_point_2)
